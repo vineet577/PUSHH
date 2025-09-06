@@ -330,6 +330,9 @@ export default function Index() {
                     <SelectItem value="javascript">JavaScript</SelectItem>
                     <SelectItem value="typescript">TypeScript</SelectItem>
                     <SelectItem value="python">Python</SelectItem>
+                    <SelectItem value="c">C</SelectItem>
+                    <SelectItem value="cpp">C++</SelectItem>
+                    <SelectItem value="java">Java</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
