@@ -5,6 +5,7 @@ import { handleDemo } from "./routes/demo";
 import { listItems, createItem, updateItem, deleteItem } from "./routes/items";
 import { compileAndRun } from "./routes/compile";
 import { pushFile } from "./routes/github";
+import { compileJudge0 } from "./routes/judge0";
 
 export function createServer() {
   const app = express();
@@ -29,6 +30,7 @@ export function createServer() {
 
   // Compile
   app.post("/api/compile", compileAndRun);
+  app.post("/api/compile/judge0", compileJudge0);
 
   // GitHub push
   app.post("/api/github/push", pushFile);
