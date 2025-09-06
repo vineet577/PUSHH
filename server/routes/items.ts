@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { promises as fs } from "fs";
 import path from "path";
+import { randomUUID } from "crypto";
 
 // Data file under project root "data/items.json"
 const dataDir = path.resolve(process.cwd(), "data");
@@ -52,7 +53,7 @@ export const createItem: RequestHandler = async (req, res) => {
     }
     const now = new Date().toISOString();
     const item: Item = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       title,
       description: typeof description === "string" ? description : undefined,
       createdAt: now,
