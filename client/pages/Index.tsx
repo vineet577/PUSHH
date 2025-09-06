@@ -166,7 +166,14 @@ export default function Index() {
     const res = await fetch("/api/github/push", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-github-token": token },
-      body: JSON.stringify({ owner, repo, branch, path: filePath, message: commitMessage, content: code }),
+      body: JSON.stringify({
+        owner,
+        repo,
+        branch,
+        path: filePath,
+        message: commitMessage,
+        content: code,
+      }),
     });
     const data = await res.json();
     if (res.ok && data.ok) {
@@ -188,7 +195,8 @@ export default function Index() {
           <CardHeader>
             <CardTitle>In-App Compiler & Push to GitHub</CardTitle>
             <CardDescription>
-              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run it, then commit to GitHub.
+              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run
+              it, then commit to GitHub.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -202,26 +210,47 @@ export default function Index() {
                     onChange={(e) => setToken(e.target.value)}
                     placeholder="ghp_..."
                   />
-                  <Button onClick={saveToken} variant="secondary">Save</Button>
+                  <Button onClick={saveToken} variant="secondary">
+                    Save
+                  </Button>
                 </div>
-                <p className="text-xs text-muted-foreground">Personal Access Token with repo scope. Stored locally in your browser.</p>
+                <p className="text-xs text-muted-foreground">
+                  Personal Access Token with repo scope. Stored locally in your
+                  browser.
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-sm font-medium">Owner</label>
-                  <Input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="your-github-username" />
+                  <Input
+                    value={owner}
+                    onChange={(e) => setOwner(e.target.value)}
+                    placeholder="your-github-username"
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Repo</label>
-                  <Input value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="repo-name" />
+                  <Input
+                    value={repo}
+                    onChange={(e) => setRepo(e.target.value)}
+                    placeholder="repo-name"
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Branch</label>
-                  <Input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" />
+                  <Input
+                    value={branch}
+                    onChange={(e) => setBranch(e.target.value)}
+                    placeholder="main"
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">File Path</label>
-                  <Input value={filePath} onChange={(e) => setFilePath(e.target.value)} placeholder={pathFor(language)} />
+                  <Input
+                    value={filePath}
+                    onChange={(e) => setFilePath(e.target.value)}
+                    placeholder={pathFor(language)}
+                  />
                 </div>
               </div>
             </div>
@@ -229,8 +258,18 @@ export default function Index() {
             <div className="grid md:grid-cols-[200px_1fr] gap-2 items-end">
               <div>
                 <label className="text-sm font-medium">Language</label>
-                <Select value={language} onValueChange={(v) => { const lang = v as Language; setLanguage(lang); setCode(exampleFor(lang)); setFilePath(pathFor(lang)); }}>
-                  <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
+                <Select
+                  value={language}
+                  onValueChange={(v) => {
+                    const lang = v as Language;
+                    setLanguage(lang);
+                    setCode(exampleFor(lang));
+                    setFilePath(pathFor(lang));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="javascript">JavaScript</SelectItem>
                     <SelectItem value="typescript">TypeScript</SelectItem>
@@ -243,29 +282,44 @@ export default function Index() {
               </div>
               <div>
                 <label className="text-sm font-medium">Commit Message</label>
-                <Input value={commitMessage} onChange={(e) => setCommitMessage(e.target.value)} />
+                <Input
+                  value={commitMessage}
+                  onChange={(e) => setCommitMessage(e.target.value)}
+                />
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium">Code ({language})</label>
-              <Textarea value={code} onChange={(e) => setCode(e.target.value)} className="font-mono min-h-[200px]" />
+              <Textarea
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="font-mono min-h-[200px]"
+              />
             </div>
 
             <div className="flex gap-3">
               <Button onClick={handleCompile}>Run</Button>
-              <Button variant="outline" onClick={handlePush}>Push to GitHub</Button>
-              <span className="text-sm text-muted-foreground">{pushStatus}</span>
+              <Button variant="outline" onClick={handlePush}>
+                Push to GitHub
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {pushStatus}
+              </span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-sm mb-2">Output</h4>
-                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">{compileResult}</pre>
+                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">
+                  {compileResult}
+                </pre>
               </div>
               <div>
                 <h4 className="font-semibold text-sm mb-2">Console</h4>
-                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">{compileLogs.join("\n")}</pre>
+                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">
+                  {compileLogs.join("\n")}
+                </pre>
               </div>
             </div>
           </CardContent>
