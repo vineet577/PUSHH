@@ -20,7 +20,11 @@ async function ensureDataFile() {
     await fs.mkdir(dataDir, { recursive: true });
     await fs.access(dataFile);
   } catch {
-    await fs.writeFile(dataFile, JSON.stringify({ items: [] as Item[] }, null, 2), "utf8");
+    await fs.writeFile(
+      dataFile,
+      JSON.stringify({ items: [] as Item[] }, null, 2),
+      "utf8",
+    );
   }
 }
 
@@ -78,8 +82,10 @@ export const updateItem: RequestHandler = async (req, res) => {
     const now = new Date().toISOString();
     items[idx] = {
       ...items[idx],
-      title: typeof title === "string" && title.length ? title : items[idx].title,
-      description: typeof description === "string" ? description : items[idx].description,
+      title:
+        typeof title === "string" && title.length ? title : items[idx].title,
+      description:
+        typeof description === "string" ? description : items[idx].description,
       updatedAt: now,
     };
     await writeItems(items);
@@ -94,7 +100,8 @@ export const deleteItem: RequestHandler = async (req, res) => {
     const { id } = req.params as { id: string };
     const items = await readItems();
     const next = items.filter((i) => i.id !== id);
-    if (next.length === items.length) return res.status(404).json({ error: "Not found" });
+    if (next.length === items.length)
+      return res.status(404).json({ error: "Not found" });
     await writeItems(next);
     res.status(204).send();
   } catch (e) {

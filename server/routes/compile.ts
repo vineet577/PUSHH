@@ -21,16 +21,23 @@ export const compileAndRun: RequestHandler = async (req, res) => {
     clearInterval,
   } as any;
   const context = vm.createContext(sandbox);
-  const script = new vm.Script(code, { filename: "user-code.js", displayErrors: true });
+  const script = new vm.Script(code, {
+    filename: "user-code.js",
+    displayErrors: true,
+  });
 
   try {
     const result = await Promise.race([
       Promise.resolve(script.runInContext(context, { timeout: 1000 })),
-      new Promise((_r, reject) => setTimeout(() => reject(new Error("Execution timed out")), 1200)),
+      new Promise((_r, reject) =>
+        setTimeout(() => reject(new Error("Execution timed out")), 1200),
+      ),
     ]);
     res.json({ ok: true, result: stringify(result), logs });
   } catch (err: any) {
-    res.status(400).json({ ok: false, error: err?.message ?? String(err), logs });
+    res
+      .status(400)
+      .json({ ok: false, error: err?.message ?? String(err), logs });
   }
 };
 
