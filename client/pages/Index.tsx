@@ -252,7 +252,7 @@ export default function Index() {
           <CardHeader>
             <CardTitle>In-App Compiler & Push to GitHub</CardTitle>
             <CardDescription>
-              Write code in JavaScript, TypeScript, or Python; run it, then commit to GitHub.
+              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run it, then commit to GitHub.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
