@@ -27,7 +27,7 @@ interface Item {
   updatedAt: string;
 }
 
-type Language = "javascript" | "typescript" | "python";
+type Language = "javascript" | "typescript" | "python" | "c" | "cpp" | "java";
 
 export default function Index() {
   // GitHub settings
