@@ -147,11 +147,11 @@ export default function Index() {
       case "python":
         return "print('Hello from Python!')\n\n# You can write Python 3.11 here";
       case "c":
-        return "#include <stdio.h>\nint main(){ printf(\"Hello from C!\\n\"); return 0; }";
+        return '#include <stdio.h>\nint main(){ printf("Hello from C!\\n"); return 0; }';
       case "cpp":
-        return "#include <iostream>\nint main(){ std::cout << \"Hello from C++!\\n\"; return 0; }";
+        return '#include <iostream>\nint main(){ std::cout << "Hello from C++!\\n"; return 0; }';
       case "java":
-        return "public class Main { public static void main(String[] args){ System.out.println(\"Hello from Java!\"); } }";
+        return 'public class Main { public static void main(String[] args){ System.out.println("Hello from Java!"); } }';
       default:
         return "console.log('Hello from JavaScript!')";
     }
@@ -195,7 +195,9 @@ export default function Index() {
       });
       const data = await res.json();
       if (data.ok) {
-        const out = [data.stdout, data.compile_output, data.stderr].filter(Boolean).join("\n");
+        const out = [data.stdout, data.compile_output, data.stderr]
+          .filter(Boolean)
+          .join("\n");
         setCompileResult(out || "(no output)");
       } else {
         setCompileResult(`Error: ${data.error}`);
@@ -230,7 +232,14 @@ export default function Index() {
     const res = await fetch("/api/github/push", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-github-token": token },
-      body: JSON.stringify({ owner, repo, branch, path: filePath, message: commitMessage, content: code }),
+      body: JSON.stringify({
+        owner,
+        repo,
+        branch,
+        path: filePath,
+        message: commitMessage,
+        content: code,
+      }),
     });
     const data = await res.json();
     if (res.ok && data.ok) {
@@ -252,7 +261,8 @@ export default function Index() {
           <CardHeader>
             <CardTitle>In-App Compiler & Push to GitHub</CardTitle>
             <CardDescription>
-              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run it, then commit to GitHub.
+              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run
+              it, then commit to GitHub.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -359,7 +369,9 @@ export default function Index() {
               <Button variant="outline" onClick={handlePush}>
                 Push to GitHub
               </Button>
-              <span className="text-sm text-muted-foreground">{pushStatus}</span>
+              <span className="text-sm text-muted-foreground">
+                {pushStatus}
+              </span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">

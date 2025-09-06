@@ -7,9 +7,11 @@ let cacheTime = 0;
 
 async function fetchLanguages(): Promise<any[]> {
   const now = Date.now();
-  if (cachedLanguages && now - cacheTime < 6 * 60 * 60 * 1000) return cachedLanguages;
+  if (cachedLanguages && now - cacheTime < 6 * 60 * 60 * 1000)
+    return cachedLanguages;
   const res = await fetch(`${BASE}/languages`);
-  if (!res.ok) throw new Error(`Failed to fetch Judge0 languages: ${res.status}`);
+  if (!res.ok)
+    throw new Error(`Failed to fetch Judge0 languages: ${res.status}`);
   const langs = (await res.json()) as any[];
   cachedLanguages = langs;
   cacheTime = now;
@@ -18,7 +20,8 @@ async function fetchLanguages(): Promise<any[]> {
 
 function pickLanguageId(langs: any[], alias: string): number | null {
   const a = alias.toLowerCase();
-  const prefer = (substr: string) => langs.filter((l) => String(l.name).toLowerCase().includes(substr));
+  const prefer = (substr: string) =>
+    langs.filter((l) => String(l.name).toLowerCase().includes(substr));
   if (a === "c") {
     const list = prefer("c (gcc");
     const last = list[list.length - 1];
@@ -39,25 +42,37 @@ function pickLanguageId(langs: any[], alias: string): number | null {
 
 export const compileJudge0: RequestHandler = async (req, res) => {
   try {
-    const { language, code, stdin } = req.body ?? {} as { language: string; code: string; stdin?: string };
-    if (typeof code !== "string" || !code.trim()) return res.status(400).json({ ok: false, error: "Code is required" });
-    if (typeof language !== "string") return res.status(400).json({ ok: false, error: "language is required" });
+    const { language, code, stdin } =
+      req.body ?? ({} as { language: string; code: string; stdin?: string });
+    if (typeof code !== "string" || !code.trim())
+      return res.status(400).json({ ok: false, error: "Code is required" });
+    if (typeof language !== "string")
+      return res.status(400).json({ ok: false, error: "language is required" });
 
     const langs = await fetchLanguages();
     let language_id: number | null = pickLanguageId(langs, language);
-    if (!language_id) return res.status(400).json({ ok: false, error: `Unsupported language alias: ${language}` });
+    if (!language_id)
+      return res
+        .status(400)
+        .json({ ok: false, error: `Unsupported language alias: ${language}` });
 
     const submissionBody = {
       language_id,
       source_code: Buffer.from(code, "utf8").toString("base64"),
-      stdin: typeof stdin === "string" ? Buffer.from(stdin, "utf8").toString("base64") : undefined,
+      stdin:
+        typeof stdin === "string"
+          ? Buffer.from(stdin, "utf8").toString("base64")
+          : undefined,
     } as Record<string, any>;
 
-    const post = await fetch(`${BASE}/submissions?base64_encoded=true&wait=true`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(submissionBody),
-    });
+    const post = await fetch(
+      `${BASE}/submissions?base64_encoded=true&wait=true`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submissionBody),
+      },
+    );
     if (!post.ok) {
       const text = await post.text();
       return res.status(post.status).json({ ok: false, error: text });
@@ -66,7 +81,11 @@ export const compileJudge0: RequestHandler = async (req, res) => {
 
     const decode = (v: any) => {
       if (!v) return "";
-      try { return Buffer.from(String(v), "base64").toString("utf8"); } catch { return String(v); }
+      try {
+        return Buffer.from(String(v), "base64").toString("utf8");
+      } catch {
+        return String(v);
+      }
     };
 
     res.json({
