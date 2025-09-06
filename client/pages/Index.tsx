@@ -146,6 +146,12 @@ export default function Index() {
         return "function add(a: number, b: number){ return a+b }\nconsole.log(add(2, 3));";
       case "python":
         return "print('Hello from Python!')\n\n# You can write Python 3.11 here";
+      case "c":
+        return "#include <stdio.h>\nint main(){ printf(\"Hello from C!\\n\"); return 0; }";
+      case "cpp":
+        return "#include <iostream>\nint main(){ std::cout << \"Hello from C++!\\n\"; return 0; }";
+      case "java":
+        return "public class Main { public static void main(String[] args){ System.out.println(\"Hello from Java!\"); } }";
       default:
         return "console.log('Hello from JavaScript!')";
     }
@@ -157,6 +163,12 @@ export default function Index() {
         return "src/index.ts";
       case "python":
         return "main.py";
+      case "c":
+        return "main.c";
+      case "cpp":
+        return "main.cpp";
+      case "java":
+        return "Main.java";
       default:
         return "src/index.js";
     }
