@@ -1,5 +1,4 @@
 import type { RequestHandler } from "express";
-import type { RequestInit } from "undici";
 import { Buffer } from "node:buffer";
 
 interface PushBody {
