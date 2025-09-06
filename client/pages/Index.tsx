@@ -187,6 +187,21 @@ export default function Index() {
       }
       return;
     }
+    if (language === "c" || language === "cpp" || language === "java") {
+      const res = await fetch("/api/compile/judge0", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language, code }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        const out = [data.stdout, data.compile_output, data.stderr].filter(Boolean).join("\n");
+        setCompileResult(out || "(no output)");
+      } else {
+        setCompileResult(`Error: ${data.error}`);
+      }
+      return;
+    }
     const res = await fetch("/api/compile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
