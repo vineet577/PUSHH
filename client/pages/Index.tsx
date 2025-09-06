@@ -153,6 +153,41 @@ export default function Index() {
     }
   }
 
+  function fileExtFor(lang: Language) {
+    switch (lang) {
+      case "typescript": return "ts";
+      case "python": return "py";
+      case "c": return "c";
+      case "cpp": return "cpp";
+      case "java": return "java";
+      default: return "js";
+    }
+  }
+
+  async function compileForPush() {
+    if (language === "python") {
+      try {
+        const py = await loadPyodideIfNeeded();
+        const result = await py.runPythonAsync(code);
+        return { ok: true, result: String(result ?? ""), logs: [] } as { ok: boolean; result: string; logs: string[] };
+      } catch (e: any) {
+        return { ok: false, result: `Error: ${e?.message ?? e}`, logs: [] };
+      }
+    }
+    if (language === "c" || language === "cpp" || language === "java") {
+      const res = await fetch("/api/compile/judge0", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language, code }) });
+      const data = await res.json();
+      if (data.ok) {
+        const out = [data.stdout, data.compile_output, data.stderr].filter(Boolean).join("\n");
+        return { ok: true, result: out || "(no output)", logs: [] };
+      }
+      return { ok: false, result: `Error: ${data.error}`, logs: [] };
+    }
+    const res = await fetch("/api/compile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language, code }) });
+    const data = await res.json();
+    return { ok: !!data.ok, result: data.ok ? data.result : `Error: ${data.error}`, logs: data.logs || [] };
+  }
+
   async function handlePush() {
     if (!token) {
       setPushStatus("Please add your GitHub token first.");
@@ -162,24 +197,40 @@ export default function Index() {
       setPushStatus("Owner, repo and file path are required.");
       return;
     }
-    setPushStatus("Pushing...");
+
+    setPushStatus("Running & pushing...");
+    const run = await compileForPush();
+
     const res = await fetch("/api/github/push", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-github-token": token },
-      body: JSON.stringify({
-        owner,
-        repo,
-        branch,
-        path: filePath,
-        message: commitMessage,
-        content: code,
-      }),
+      body: JSON.stringify({ owner, repo, branch, path: filePath, message: commitMessage, content: code }),
     });
     const data = await res.json();
-    if (res.ok && data.ok) {
-      setPushStatus(`Pushed! Commit ${data.commit?.slice(0, 7)}`);
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const logPath = `runs/your-program-${stamp}.txt`;
+    const logContent = [
+      `Language: ${language}`,
+      `Source file: ${filePath || `your-program.${fileExtFor(language)}`}`,
+      "",
+      "===== Code =====",
+      code,
+      "",
+      "===== Output =====",
+      run.result,
+    ].join("\n");
+    const res2 = await fetch("/api/github/push", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-github-token": token },
+      body: JSON.stringify({ owner, repo, branch, path: logPath, message: `${commitMessage} (save run output)`, content: logContent }),
+    });
+    const data2 = await res2.json();
+
+    if (res.ok && data.ok && res2.ok && data2.ok) {
+      setPushStatus(`Pushed code + run log (${logPath})`);
     } else {
-      setPushStatus(`Failed: ${data.error || res.statusText}`);
+      setPushStatus(`Failed: ${data.error || data2.error || res.statusText || res2.statusText}`);
     }
   }
 
