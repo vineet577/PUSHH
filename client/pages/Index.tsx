@@ -16,16 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-
-interface Item {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 type Language = "javascript" | "typescript" | "python" | "c" | "cpp" | "java";
 
@@ -82,63 +73,6 @@ export default function Index() {
   const saveToken = () => {
     localStorage.setItem("gh_token", token);
   };
-
-  // CRUD: Items
-  const qc = useQueryClient();
-  const itemsQuery = useQuery<{ items: Item[] }>({
-    queryKey: ["items"],
-    queryFn: async () => {
-      const res = await fetch("/api/items");
-      if (!res.ok) throw new Error("Failed to fetch items");
-      return res.json();
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: async (payload: { title: string; description?: string }) => {
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Create failed");
-      return res.json();
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["items"] }),
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({
-      id,
-      title,
-      description,
-    }: {
-      id: string;
-      title?: string;
-      description?: string;
-    }) => {
-      const res = await fetch(`/api/items/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description }),
-      });
-      if (!res.ok) throw new Error("Update failed");
-      return res.json();
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["items"] }),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Delete failed");
-      return true;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["items"] }),
-  });
-
-  const [newTitle, setNewTitle] = useState("");
-  const [newDesc, setNewDesc] = useState("");
 
   function exampleFor(lang: Language) {
     switch (lang) {
@@ -232,14 +166,7 @@ export default function Index() {
     const res = await fetch("/api/github/push", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-github-token": token },
-      body: JSON.stringify({
-        owner,
-        repo,
-        branch,
-        path: filePath,
-        message: commitMessage,
-        content: code,
-      }),
+      body: JSON.stringify({ owner, repo, branch, path: filePath, message: commitMessage, content: code }),
     });
     const data = await res.json();
     if (res.ok && data.ok) {
@@ -256,13 +183,12 @@ export default function Index() {
 
   return (
     <main className={cn("min-h-[calc(100vh-60px)]", brandGradient)}>
-      <section className="container mx-auto px-4 py-10 grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <section className="container mx-auto px-4 py-10 grid grid-cols-1 gap-8">
         <Card className="border-primary/20 shadow-[0_10px_40px_-15px_rgba(99,102,241,0.4)]">
           <CardHeader>
             <CardTitle>In-App Compiler & Push to GitHub</CardTitle>
             <CardDescription>
-              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run
-              it, then commit to GitHub.
+              Write code in JavaScript, TypeScript, Python, C, C++, or Java; run it, then commit to GitHub.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -276,47 +202,26 @@ export default function Index() {
                     onChange={(e) => setToken(e.target.value)}
                     placeholder="ghp_..."
                   />
-                  <Button onClick={saveToken} variant="secondary">
-                    Save
-                  </Button>
+                  <Button onClick={saveToken} variant="secondary">Save</Button>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Personal Access Token with repo scope. Stored locally in your
-                  browser.
-                </p>
+                <p className="text-xs text-muted-foreground">Personal Access Token with repo scope. Stored locally in your browser.</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-sm font-medium">Owner</label>
-                  <Input
-                    value={owner}
-                    onChange={(e) => setOwner(e.target.value)}
-                    placeholder="your-github-username"
-                  />
+                  <Input value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="your-github-username" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Repo</label>
-                  <Input
-                    value={repo}
-                    onChange={(e) => setRepo(e.target.value)}
-                    placeholder="repo-name"
-                  />
+                  <Input value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="repo-name" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">Branch</label>
-                  <Input
-                    value={branch}
-                    onChange={(e) => setBranch(e.target.value)}
-                    placeholder="main"
-                  />
+                  <Input value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" />
                 </div>
                 <div>
                   <label className="text-sm font-medium">File Path</label>
-                  <Input
-                    value={filePath}
-                    onChange={(e) => setFilePath(e.target.value)}
-                    placeholder={pathFor(language)}
-                  />
+                  <Input value={filePath} onChange={(e) => setFilePath(e.target.value)} placeholder={pathFor(language)} />
                 </div>
               </div>
             </div>
@@ -324,18 +229,8 @@ export default function Index() {
             <div className="grid md:grid-cols-[200px_1fr] gap-2 items-end">
               <div>
                 <label className="text-sm font-medium">Language</label>
-                <Select
-                  value={language}
-                  onValueChange={(v) => {
-                    const lang = v as Language;
-                    setLanguage(lang);
-                    setCode(exampleFor(lang));
-                    setFilePath(pathFor(lang));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
+                <Select value={language} onValueChange={(v) => { const lang = v as Language; setLanguage(lang); setCode(exampleFor(lang)); setFilePath(pathFor(lang)); }}>
+                  <SelectTrigger><SelectValue placeholder="Select language" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="javascript">JavaScript</SelectItem>
                     <SelectItem value="typescript">TypeScript</SelectItem>
@@ -348,149 +243,34 @@ export default function Index() {
               </div>
               <div>
                 <label className="text-sm font-medium">Commit Message</label>
-                <Input
-                  value={commitMessage}
-                  onChange={(e) => setCommitMessage(e.target.value)}
-                />
+                <Input value={commitMessage} onChange={(e) => setCommitMessage(e.target.value)} />
               </div>
             </div>
 
             <div>
               <label className="text-sm font-medium">Code ({language})</label>
-              <Textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className="font-mono min-h-[200px]"
-              />
+              <Textarea value={code} onChange={(e) => setCode(e.target.value)} className="font-mono min-h-[200px]" />
             </div>
 
             <div className="flex gap-3">
               <Button onClick={handleCompile}>Run</Button>
-              <Button variant="outline" onClick={handlePush}>
-                Push to GitHub
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {pushStatus}
-              </span>
+              <Button variant="outline" onClick={handlePush}>Push to GitHub</Button>
+              <span className="text-sm text-muted-foreground">{pushStatus}</span>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-sm mb-2">Output</h4>
-                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">
-                  {compileResult}
-                </pre>
+                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">{compileResult}</pre>
               </div>
               <div>
                 <h4 className="font-semibold text-sm mb-2">Console</h4>
-                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">
-                  {compileLogs.join("\n")}
-                </pre>
+                <pre className="bg-muted/40 rounded-md p-3 text-sm overflow-auto min-h-16 max-h-48">{compileLogs.join("\n")}</pre>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-accent/20">
-          <CardHeader>
-            <CardTitle>CRUD Items (Full-stack)</CardTitle>
-            <CardDescription>
-              Create, edit, and delete items stored on the server.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-3 gap-2">
-              <Input
-                placeholder="Title"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-              />
-              <Input
-                placeholder="Description"
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-              />
-              <Button
-                onClick={() => {
-                  if (!newTitle.trim()) return;
-                  createMutation.mutate({
-                    title: newTitle.trim(),
-                    description: newDesc.trim() || undefined,
-                  });
-                  setNewTitle("");
-                  setNewDesc("");
-                }}
-              >
-                Add
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {itemsQuery.data?.items?.length ? (
-                itemsQuery.data.items.map((it) => (
-                  <ItemRow
-                    key={it.id}
-                    item={it}
-                    onSave={(t, d) =>
-                      updateMutation.mutate({
-                        id: it.id,
-                        title: t,
-                        description: d,
-                      })
-                    }
-                    onDelete={() => deleteMutation.mutate(it.id)}
-                  />
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No items yet. Add your first above.
-                </p>
-              )}
             </div>
           </CardContent>
         </Card>
       </section>
     </main>
-  );
-}
-
-function ItemRow({
-  item,
-  onSave,
-  onDelete,
-}: {
-  item: Item;
-  onSave: (title?: string, description?: string) => void;
-  onDelete: () => void;
-}) {
-  const [t, setT] = useState(item.title);
-  const [d, setD] = useState(item.description ?? "");
-  const changed = t !== item.title || d !== (item.description ?? "");
-  return (
-    <div className="grid md:grid-cols-5 gap-2 items-center rounded-md border p-2">
-      <Input
-        className="md:col-span-2"
-        value={t}
-        onChange={(e) => setT(e.target.value)}
-      />
-      <Input
-        className="md:col-span-2"
-        value={d}
-        onChange={(e) => setD(e.target.value)}
-      />
-      <div className="flex gap-2 justify-end">
-        <Button
-          size="sm"
-          variant={changed ? "default" : "secondary"}
-          onClick={() => onSave(t, d)}
-          disabled={!changed}
-        >
-          Save
-        </Button>
-        <Button size="sm" variant="destructive" onClick={onDelete}>
-          Delete
-        </Button>
-      </div>
-    </div>
   );
 }
